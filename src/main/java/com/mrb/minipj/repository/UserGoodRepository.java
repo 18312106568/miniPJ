@@ -5,7 +5,7 @@
  */
 package com.mrb.minipj.repository;
 
-import com.mrb.miniPj.Application;
+import com.mrb.minipj.Application;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Component;
 
