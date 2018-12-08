@@ -6,3 +6,4 @@
 * mini-es 极简嵌入elasticsearch
 * ex-mini-es es拓展应用
 * mini-redis 极简嵌入redis
+* mini-jpa 极简嵌入mysql
