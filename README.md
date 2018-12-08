@@ -2,4 +2,4 @@
 极简风格的项目，以最小依赖最少文件来构建项目
 快速学习springboot
 
-* mini-es 极简嵌入elasticsearch
+* mini-jpa 极简嵌入mysql

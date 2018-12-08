@@ -1,12 +1,16 @@
 package com.mrb.minipj;
 
 
+import com.mrb.minipj.repository.UserRepository;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.persistence.*;
+import java.util.List;
 
 
 /**
@@ -23,26 +27,41 @@ public class Application {
     @RestController
     static class DefaultController{
 
-
         @Autowired
-        StringRedisTemplate stringRedisTemplate;
+        UserRepository userRepository;
 
-        @RequestMapping(value = "redis/get")
-        public String getKeyValue(String key){
-            return stringRedisTemplate.opsForValue().get(key);
-        }
-        
-        @RequestMapping(value = "redis/set")
-        public String setKeyValue(String key,String value){
+        @RequestMapping(value = "user/save")
+        public String saveUser(String userName){
             try {
-                stringRedisTemplate.opsForValue().set(key, value);
+                User user = new User();
+                user.setName(userName);
+                userRepository.save(user);
                 return "success";
             }catch(Exception ex){
                 ex.printStackTrace();
             }
             return "fail";
         }
+
+        @RequestMapping(value = "user/get")
+        public List<User> getUser(String userName){
+           List<User> userList = userRepository.findAllByName(userName);
+           return userList;
+        }
         
+    }
+
+    @Data
+    @Entity
+    @Table(name = "tb_user")
+    public  static class User{
+        @Id
+        @Column(name="id")
+        @GeneratedValue(strategy=GenerationType.IDENTITY)
+        private Long id;
+        @Column(name="name")
+        private String name;
+
     }
 
 
