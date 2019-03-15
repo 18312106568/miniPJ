@@ -2,10 +2,14 @@ package com.mrb.miniPj;
 
 import com.alibaba.nacos.api.config.annotation.NacosValue;
 import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -43,6 +47,23 @@ public class Application {
         @ResponseBody
         public String testGet() {
             return this.useLocalCache;
+        }
+    }
+
+    @RestController
+    @RequestMapping("/cache")
+    static class CacheController {
+
+        @Autowired
+        StringRedisTemplate stringRedisTemplate;
+
+        @RequestMapping("/get-key")
+        public String getKey(@RequestParam("name")String name){
+            String result = stringRedisTemplate.opsForValue().get(name);
+            if(StringUtils.isEmpty(result)){
+                return "no exit!";
+            }
+            return result;
         }
     }
 
