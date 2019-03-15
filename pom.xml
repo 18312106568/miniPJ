@@ -9,6 +9,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <nacos-config-spring-boot.version>0.2.1</nacos-config-spring-boot.version>
     </properties>
     
     
@@ -24,9 +25,17 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
+         <dependency>
+             <groupId>com.alibaba.boot</groupId>
+             <artifactId>nacos-config-spring-boot-starter</artifactId>
+             <version>${nacos-config-spring-boot.version}</version>
+         </dependency>
+
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+            <groupId>com.alibaba.boot</groupId>
+            <artifactId>nacos-config-spring-boot-actuator</artifactId>
+            <version>${nacos-config-spring-boot.version}</version>
         </dependency>
         
         <dependency>
