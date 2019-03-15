@@ -71,7 +71,6 @@
     <orderEntry type="library" name="Maven: com.alibaba.spring:spring-context-support:1.0.1" level="project" />
     <orderEntry type="library" name="Maven: com.alibaba.boot:nacos-config-spring-boot-autoconfigure:0.2.1" level="project" />
     <orderEntry type="library" name="Maven: com.alibaba.boot:nacos-spring-boot-base:0.2.1" level="project" />
-    <orderEntry type="library" name="Maven: com.alibaba.boot:nacos-config-spring-boot-actuator:0.2.1" level="project" />
     <orderEntry type="library" name="Maven: org.projectlombok:lombok:1.16.18" level="project" />
   </component>
 </module>

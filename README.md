@@ -8,3 +8,5 @@
 * mini-redis 极简嵌入redis
 * mini-jpa 极简嵌入mysql
 * mini-freemarker 极简嵌入freemarker
+* mini-nacos 极简嵌入nacos
+
