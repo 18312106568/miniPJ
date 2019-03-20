@@ -8,6 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +27,7 @@ import java.util.concurrent.*;
  *
  * @author MRB
  */
+@EnableScheduling
 @SpringBootApplication
 public class Application {
     public static void main(String args[]){
@@ -60,6 +64,7 @@ public class Application {
                     @Override
                     public Long call() throws Exception {
                         try {
+                            Thread.sleep((int)Math.random()*1000);
                             long cost = userService.saveUser(Long.toString(System.currentTimeMillis()));
                             return cost;
                         } catch (Exception ex) {
@@ -106,6 +111,65 @@ public class Application {
            return userList;
         }
         
+    }
+
+    @Slf4j
+    @Component
+    public static class CleanTask {
+
+        @Autowired
+        UserService userService;
+
+        ExecutorService executorService = Executors.newFixedThreadPool(16);
+
+        public static int taskCount=0;
+
+
+        /**
+         * 每秒执行一次
+         */
+        //@Scheduled(cron = "0/1 * * * * ?")
+        public void batchAddUser() throws ExecutionException, InterruptedException {
+            log.info("======>start the task：{}",taskCount++);
+            List<FutureTask> taskList = new ArrayList<>();
+            long start = System.currentTimeMillis();
+            for (int i = 0; i < 50; i++) {
+                Callable<Long> callable = new Callable<Long>() {
+                    @Override
+                    public Long call() throws Exception {
+                        try {
+                            Thread.sleep((int)Math.random()*10);
+                            long cost = userService.saveUser(Long.toString(System.currentTimeMillis()));
+                            return cost;
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+
+                        }
+                        return -1l;
+                    }
+                };
+                FutureTask<Long> task = new FutureTask(callable);
+                taskList.add(task);
+                executorService.submit(task);
+            }
+            int count=0;
+            long maxCost=0;
+            for(Future<Long> task : taskList){
+                long cost = task.get();
+                if(cost>0){
+                    count++;
+                    if(cost>maxCost){
+                        maxCost=cost;
+                    }
+                }
+                continue;
+            }
+            long end = System.currentTimeMillis();
+            log.info("成功添加条数:{},花费时间：{} 毫秒,其中最大耗时是：{} 毫秒",count,(end-start),maxCost);
+        }
+
+
+
     }
 
     @Slf4j
