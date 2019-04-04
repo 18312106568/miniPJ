@@ -2,10 +2,12 @@ package com.mrb.minipj;
 
 
 import com.google.gson.Gson;
-import com.mrb.minipj.repository.UserRepository;
+import com.mrb.minipj.repository.exam.CdbItsPdetailsRepository;
+import com.mrb.minipj.repository.primary.UserRepository;
 import com.mrb.minipj.utils.DateUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.*;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -14,15 +16,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.*;
 import javax.sql.DataSource;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -30,13 +33,17 @@ import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 
 
 /**
  *
  * @author MRB
  */
+@Slf4j
 @EnableScheduling
 @SpringBootApplication
 public class Application {
@@ -56,6 +63,9 @@ public class Application {
 
         @Autowired
         DataSource dataSource;
+
+        @Autowired
+        CdbItsPdetailsRepository cdbItsPdetailsRepository;
 
         ExecutorService executorService = Executors.newFixedThreadPool(32);
 
@@ -120,6 +130,69 @@ public class Application {
         public List<User> getUser(String userName){
            List<User> userList = userRepository.findAllByName(userName);
            return userList;
+        }
+
+        @RequestMapping(value = "tran/submit")
+        public String geCdbItsPdetails(Integer pid,String loginSign) throws IOException {
+            log.info("======>geCdbItsPdetails request param:pid:{},loginSign",pid,loginSign);
+            String REGEX = ".*alert\\('(.*)'\\);window.location.href.*";
+            List<CdbItsPdetails> cdbItsPdetailsList = cdbItsPdetailsRepository.findAllByPid(pid);
+            Map<String,List<CdbItsPdetails>> cdbItsPdetailsMap=
+                    cdbItsPdetailsList.stream().collect(Collectors.groupingBy(CdbItsPdetails::getType));
+
+            StringBuilder sb = new StringBuilder("&subVal=%CC%E1%BD%BB");
+            for(String key:cdbItsPdetailsMap.keySet()){
+               if("checkbox".equals(key)) {
+                   continue;
+               }
+               List<CdbItsPdetails> pdetailsList = cdbItsPdetailsMap.get(key);
+               for(CdbItsPdetails pdetails:pdetailsList){
+                   sb.append("&").append(String.format("%s-%d=%s",pdetails.getType(),pdetails.getQid(),pdetails.getRAns()));
+               }
+            }
+            List<CdbItsPdetails> checkBoxList = cdbItsPdetailsMap.get("checkbox");
+            for(CdbItsPdetails checkBox :checkBoxList){
+                char[] ransChars = checkBox.getRAns().toCharArray();
+                for(char ransChar : ransChars) {
+                    sb.append("&").append(String.format("%s-%d-%s=%s", checkBox.getType(), checkBox.getQid(), ransChar,ransChar));
+                }
+            }
+            String url = String.format("http://173.1.1.2/train/its_exam.php?action=submit&id=%d",pid);
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .connectTimeout(120, TimeUnit.SECONDS)
+                    .readTimeout(120, TimeUnit.SECONDS)
+                    .build();
+            MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+            RequestBody body = RequestBody.create(mediaType, sb.substring(1).toString());
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .addHeader("content-type", "application/x-www-form-urlencoded")
+                    .addHeader("Accept-Encoding", "gzip, deflate")
+                    .addHeader("Accept-Language","zh-CN,zh;q=0.9,en;q=0.8")
+                    .addHeader("Referer",String.format("http://173.1.1.2/train/its_exam.php?action=enter&id=%d",pid))
+                    .addHeader("User-Agent","Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36")
+                    .addHeader("Cookie", loginSign)
+                    //"PHPSESSID=og0n6eovq3qr8br6955gmn3hm7;cdb_auth=2316elvypnl6%2FJ913%2BXo3SSPhW0SP8PL7iAyGOCODx9apIwQskN9TJH93DsYScQ4sJguachOsvW6wC0Kvce7EaJQ4EU;uchome_loginuser=20233;cdb_sid=E80NhA;"
+                    .build();
+            Response response = client.newCall(request).execute();
+            byte[] data = response.body().bytes();
+            ByteArrayInputStream bis = new ByteArrayInputStream(data);
+            GZIPInputStream gzip = new GZIPInputStream(bis);
+            byte[] buf = new byte[1024];
+            int num = -1;
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            while ((num = gzip.read(buf, 0, buf.length)) != -1) {
+                bos.write(buf, 0, num);
+            }
+            gzip.close();
+            bis.close();
+            byte[] ret = bos.toByteArray();
+            bos.flush();
+            bos.close();
+            String result = new String(new String(ret,"GB2312").getBytes(),"UTF-8");
+            log.info(result);
+            return result.replaceAll("\\r\\n","").replaceAll(REGEX,"$1");
         }
         
     }
@@ -213,6 +286,38 @@ public class Application {
         private Long id;
         @Column(name="name")
         private String name;
+
+    }
+
+    @Data
+    @Entity
+    @Table(name = "cdb_its_pdetails")
+    public  static class CdbItsPdetails{
+        @Id
+        @Column(name="id")
+        @GeneratedValue(strategy=GenerationType.IDENTITY)
+        private Long id;
+
+        @Column(name="pid")
+        private Integer pid;
+
+        @Column(name="qid")
+        private Integer qid;
+
+        @Column(name="type")
+        private String type;
+
+        @Column(name="question")
+        private String question;
+
+        @Column(name="ans")
+        private String ans;
+
+        @Column(name="r_ans")
+        private String rAns;
+
+        @Column(name="value")
+        private Integer value;
 
     }
 
