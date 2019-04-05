@@ -1,16 +1,7 @@
-package com.mrb.miniPj;
-import com.mrb.minipj.repository.UserGoodRepository;
-import java.io.Serializable;
-import java.util.Optional;
-import lombok.Data;
-import org.elasticsearch.index.settings.IndexDynamicSettings;
-import org.springframework.beans.factory.annotation.Autowired;
+package com.mrb.minipj;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,42 +17,21 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @SpringBootApplication
 public class Application {
+
     public static void main(String args[]){
         SpringApplication.run(Application.class, args);
     }
     
-    
+    @Slf4j
     @RestController
     static class DefaultController{
-        @Autowired
-        UserGoodRepository userGoodRepository;
-        
-        @RequestMapping(value = "saveGood")
-        public String saveUserGood(Long id){
-            System.out.println("保存商品");
-            UserGoods userGoods = new UserGoods();
-            userGoods.setId(new Long(id));
-            userGoods.setGoodDesc("奶茶真好喝");
-            userGoods.setGoodName("奶茶");
-            if(userGoodRepository.save(userGoods)!=null){
-                return "success";
-            }
-            return  "fail";
-        }
-        
-        @RequestMapping(value = "getGood")
-        public String getUserGood(Long id){
-            Optional<UserGoods> optional = userGoodRepository.findById(id);
-            return optional.get().toString();
+
+        @RequestMapping(value = "dolog")
+        public String doLog(Long id){
+            log.info("hi,man how are you?");
+            return "we had done log";
         }
         
     }
-    
-    @Data
-    @Document(indexName = "es-good",type = "user")
-    public static class UserGoods implements Serializable{
-        private Long id;
-        private String goodName;
-        private String goodDesc;
-    }
+
 }
