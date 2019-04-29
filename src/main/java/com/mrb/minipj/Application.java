@@ -29,6 +29,8 @@ public class Application {
         @RequestMapping(value = "dolog")
         public String doLog(Long id){
             log.info("hi,man how are you?");
+            log.warn("warning....!!!");
+            log.error("i can not do it");
             return "we had done log";
         }
         

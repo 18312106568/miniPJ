@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="true">
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-    <springProperty scope="context" name="applicationName" source="application.name"/>
+    <springProperty scope="context" name="applicationName" source="logstash.server.name"/>
+    <springProperty scope="context" name="env" source="logstash.server.env"/>
     <!--<springProperty scope="context" name="logstash-server" source="spring.logstash.server"/>-->
     <property resource="application.properties" />
     <!-- Example for logging into the build folder of your project -->
@@ -72,11 +73,11 @@
 
     <appender name="logstash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
         <param name="Encoding" value="UTF-8"/>
-        <remoteHost>${logstash.server}</remoteHost>
-        <port>5044</port>
+        <remoteHost>${logstash.server.host}</remoteHost>
+        <port>${logstash.server.port}</port>
         <!-- encoder is required -->
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <customFields>{"applicationName":"${applicationName}","env":"dev"}</customFields>
+            <customFields>{"applicationName":"${applicationName}","env":"${env}"}</customFields>
         </encoder>
     </appender>
 
