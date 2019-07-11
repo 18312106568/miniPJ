@@ -1,0 +1,20 @@
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+
+# Maven package
+/target
+*/target
+*.jar
+
+#idea settings
+*.iml
+.classpath
+.project
+.settings
+.idea
+.tern-project
+.mymetadata
