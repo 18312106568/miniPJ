@@ -74,23 +74,21 @@ public class Application {
         return new TopicExchange(EXCHANGE_NAME);
     }
 
-//    @Bean
-//    Binding bindingExchangeMessage(Queue queueMessage, TopicExchange topicExchange) {
-//        return BindingBuilder.bind(queueMessage).to(topicExchange).with(QUEUE_NAME);
-//    }
-
     @Component
     public static class TestReceive {
-        @RabbitListener(queues = QUEUE_NAME)    //监听器监听指定的Queue
-//        @RabbitListener(bindings = {@QueueBinding(
-//                value=@org.springframework.amqp.rabbit.annotation.Queue(QUEUE_NAME),
-//                exchange = @org.springframework.amqp.rabbit.annotation.Exchange(value = EXCHANGE_NAME,type = "topic"),
-//                key = QUEUE_NAME)})
+//        @RabbitListener(queues = QUEUE_NAME)    //监听器监听指定的Queue
+        @RabbitListener(bindings = {@QueueBinding(
+        value=@org.springframework.amqp.rabbit.annotation.Queue(QUEUE_NAME),
+        exchange = @org.springframework.amqp.rabbit.annotation.Exchange(value = EXCHANGE_NAME,type = "topic"),
+        key = QUEUE_NAME)})
         public void processC(String str) {
             System.out.println("ReceiveC:" + str);
         }
 
-        @RabbitListener(queues = QUEUE_NAME)    //监听器监听指定的Queue
+        @RabbitListener(bindings = {@QueueBinding(
+                value=@org.springframework.amqp.rabbit.annotation.Queue(QUEUE_NAME),
+                exchange = @org.springframework.amqp.rabbit.annotation.Exchange(value = EXCHANGE_NAME,type = "topic"),
+                key = QUEUE_NAME)})
         public void processA(String str) {
             System.out.println("ReceiveA:" + str);
         }
