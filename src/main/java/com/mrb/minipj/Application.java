@@ -1,20 +1,16 @@
-package com.mrb.miniPj;
+package com.mrb.minipj;
 
-import com.mrb.miniPj.service.DemoService;
 import org.apache.cxf.Bus;
-import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
-import org.apache.cxf.transport.servlet.CXFServlet;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import javax.jws.WebService;
 import javax.xml.ws.Endpoint;
-import java.util.Date;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -32,18 +28,37 @@ public class Application {
         SpringApplication.run(Application.class, args);
     }
 
+    @Configuration
+    public static  class CxfConfig {
+
+        @Autowired
+        private Bus bus;
+
+        @Autowired
+        public DemoService demoService;
+
+
+
+        @Bean
+        public Endpoint endpoint() {
+            EndpointImpl endpoint = new EndpointImpl(bus, demoService);
+            WebService serviceAnn = demoService.getClass().getDeclaredAnnotation(WebService.class);
+            endpoint.publish("/"+serviceAnn.name());
+            return endpoint;
+        }
+    }
+
 
 
     @Component
-    @WebService(serviceName = "DemoService", // 与接口中指定的name一致
-            targetNamespace = "http://service.minipj.mrb.com", // 与接口中的命名空间一致,一般是接口的包名倒
-            endpointInterface = "com.mrb.miniPj.service.DemoService"// 接口地址
-    )
-    public static class DemoServiceImpl implements DemoService {
+    @WebService(serviceName = "demo",
+            targetNamespace = "http://service.minipj.mrb.com"
 
-        @Override
-        public String sayHello(String user) {
-            return user+"，现在时间："+"("+new Date()+")";
+    )
+    public static class DemoService  {
+
+        public String helloWorld(String param) {
+            return "hello"+param;
         }
 
     }
