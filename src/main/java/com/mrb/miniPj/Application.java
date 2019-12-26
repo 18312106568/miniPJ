@@ -1,5 +1,6 @@
 package com.mrb.miniPj;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,22 +16,21 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @author MRB
  */
+@Slf4j
 @SpringBootApplication
 public class Application {
     public static void main(String args[]){
         SpringApplication.run(Application.class, args);
     }
-    
-    
-    @RestController
-    static class DefaultController{
-        
-        @RequestMapping
-        public String saveUserGood(Long id){
-            return "hello world";
-        }
 
-        
+    @RestController
+    static class logController{
+        @RequestMapping("/log")
+        public String testLog(){
+            log.info("we are do log");
+            return "success";
+        }
     }
+
 
 }
