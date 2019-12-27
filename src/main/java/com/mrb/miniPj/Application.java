@@ -7,6 +7,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,13 +29,19 @@ public class Application {
     }
 
 
-    @RestController
+    @Controller
     @RequestMapping("/")
     static class DefaultController{
 
         @RequestMapping("index")
-        public String index(){
-            return "hello world";
+        public String index(Model model){
+            model.addAttribute("name","hello pillar");
+            return "index";
+        }
+
+        @RequestMapping("userlogin")
+        public String login(Model model){
+            return "userlogin";
         }
     }
 
